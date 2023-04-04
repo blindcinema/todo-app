@@ -1,28 +1,20 @@
 import { useState } from 'react'
 
-  const defaultItems  = [
-    {
-      id: 1,
-      text: "Kupi miljeko",
-      done: false,
-    },
-    {
-      id: 2,
-      text: "Kupi brašno",
-      done: true,
-    },
-  ];
-
-
 function App() {
-  const [items, setItems] = useState(defaultItems);
-  const [formState, setFormState] = useState("");
-  const itemComponents = items.map( item => {
+  const [ items, setItems ] = useState([]);
+  const [ formState, setFormState ] = useState("");
+  const [ sort, setSort ] = useState("createdAtDesc");
+
+  const itemComponents = items
+  .sort((a,b) => {
+    if (sort === "createdAtAsc") {
+    return a.createdAt - b.createdAt;
+    }
+    else return b.createdAt - a.createdAt
+  })
+  .map( item => {
     const handleChange = (event) => {
-
-      console.log("handle change for item", item);
       setItems(items.map(newItem => {
-
         if (newItem.id === item.id) {
 
           return(  { ...newItem, done: !item.done});
@@ -32,6 +24,7 @@ function App() {
         }
       }));
     };
+
     const handleClick = () => {
       setItems(items.filter(newItem => {
         return newItem.id !== item.id;
@@ -39,12 +32,15 @@ function App() {
     };
 
 
-
     return ( 
-      <div key={item.id} style={{ textDecoration: item.done ? "line-through" : "none"}}><input type="checkbox" checked={item.done} onChange={handleChange} />{item.text}
-      <button onClick={handleClick}>x</button></div>
+      <div key={item.id} style={{ textDecoration: item.done ? "line-through" : "none"}}>
+        <input type="checkbox" checked={item.done} onChange={handleChange} />
+        {item.text} ({ new Date(item.createdAt).toUTCString()})
+        <button onClick={handleClick}>x</button>
+      </div>
     );
   });
+
   const handleSubmit = (event) => {
     event.preventDefault();
     setFormState("");
@@ -52,6 +48,7 @@ function App() {
        {id: Date.now(),
         text: formState,
         done: false,
+        createdAt: Date.now(),
 
     }]  );
   }
@@ -61,6 +58,9 @@ function App() {
     setFormState(event.target.value);
   }
 
+  function handleSort(event) {
+    setSort(event.target.value);
+  }
 
   return (
     <div className="App">
@@ -69,6 +69,10 @@ function App() {
         <input type="text" onChange={handleInputChange} value={formState} />
         <button type="submit">Add</button>
       </form>
+      <select onChange={handleSort} defaultValue={sort}>
+        <option value="createdAtAsc">Created at (Ascending)</option>
+        <option value="createdAtDesc"> Created at (Descending)</option>
+      </select>
       {itemComponents}
     </div>
   )
